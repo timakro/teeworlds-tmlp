@@ -542,7 +542,12 @@ set(GAME_GENERATED_SHARED
 set(DEPS ${DEP_MD5} ${ZLIB_DEP})
 
 # Libraries
-set(LIBS ${CMAKE_THREAD_LIBS_INIT} ${ZLIB_LIBRARIES} ${PLATFORM_LIBS})
+set(LIBS
+  ${CMAKE_THREAD_LIBS_INIT}
+  ${ZLIB_LIBRARIES} ${PLATFORM_LIBS}
+  "${PROJECT_SOURCE_DIR}/other/tensorflow/libtensorflow_cc.so.1"
+  "${PROJECT_SOURCE_DIR}/other/tensorflow/libtensorflow_framework.so.1"
+)
 
 # Targets
 add_library(engine-shared EXCLUDE_FROM_ALL OBJECT ${ENGINE_INTERFACE} ${ENGINE_SHARED} ${ENGINE_GENERATED_SHARED} ${BASE})
@@ -767,6 +772,8 @@ set_glob(GAME_SERVER GLOB_RECURSE src/game/server
   player.h
   gplogger.cpp
   gplogger.h
+  model.cpp
+  model.h
 )
 set(GAME_GENERATED_SERVER
   "src/game/generated/server_data.cpp"
@@ -1234,6 +1241,7 @@ foreach(target ${TARGETS_OWN})
   target_compile_definitions(${target} PRIVATE $<$<CONFIG:Debug>:CONF_DEBUG>)
   target_include_directories(${target} PRIVATE ${CURL_INCLUDE_DIRS})
   target_include_directories(${target} PRIVATE ${ZLIB_INCLUDE_DIRS})
+  target_include_directories(${target} PRIVATE "other/tensorflow/include")
 endforeach()
 
 foreach(target ${TARGETS_DEP})
