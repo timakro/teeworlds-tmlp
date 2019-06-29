@@ -202,3 +202,24 @@ void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elas
 	*pInoutPos = Pos;
 	*pInoutVel = Vel;
 }
+
+void CCollision::RenderTMLPFrame(uint8_t *RenderBuffer, vec2 Center)
+{
+	int CenterX = ((int)Center.x+8)/16;
+	int CenterY = ((int)Center.y+8)/16;
+	for(int y = 0; y < 50; y++)
+	{
+		for(int x = 0; x < 90; x++)
+		{
+			int cx = clamp((CenterX - 45 + x)/2, 0, m_Width-1);
+			int cy = clamp((CenterY - 25 + y)/2, 0, m_Height-1);
+			int Tile = m_pTiles[cy*m_Width+cx].m_Index;
+			switch(Tile)
+			{
+				case COLFLAG_SOLID:                RenderBuffer[y*90+x] = 1; break;
+				case COLFLAG_DEATH:                RenderBuffer[y*90+x] = 2; break;
+				case COLFLAG_SOLID|COLFLAG_NOHOOK: RenderBuffer[y*90+x] = 3; break;
+			}
+		}
+	}
+}

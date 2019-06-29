@@ -17,11 +17,12 @@ public:
 	virtual void TickPaused();
 	virtual void Snap(int SnappingClient);
 
+	vec2 m_CurPos;
+	int m_Type;
 private:
 	vec2 m_Direction;
 	int m_LifeSpan;
 	int m_Owner;
-	int m_Type;
 	int m_Damage;
 	int m_SoundImpact;
 	int m_Weapon;

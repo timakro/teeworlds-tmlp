@@ -143,6 +143,8 @@ public:
 
 	*/
 	void Tick();
+
+	void RenderTMLPFrame(uint8_t *RenderBuffer, vec2 Center);
 };
 
 #endif

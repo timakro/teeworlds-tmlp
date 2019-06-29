@@ -516,6 +516,29 @@ void CCharacter::ResetInput()
 
 void CCharacter::Tick()
 {
+	if(Server()->Tick() % 2 == 0)
+	{
+		uint8_t RenderData[90*50] = {0};
+		GameServer()->m_World.RenderTMLPFrame(RenderData, m_Pos);
+		GameServer()->Collision()->RenderTMLPFrame(RenderData, m_Pos);
+		for(int i = 0; i < m_Health; i++)
+			RenderData[1*90+1+i*2] = 21;
+		for(int i = 0; i < m_Armor; i++)
+			RenderData[3*90+1+i*2] = 21;
+		for(int i = 0; i < m_aWeapons[m_ActiveWeapon].m_Ammo; i++)
+			RenderData[5*90+1+i*2] = 21;
+		CGameplayLogger::CInputData InputData = {
+			m_LatestInput.m_TargetX,
+			m_LatestInput.m_TargetY,
+			(int8_t)m_LatestInput.m_Direction,
+			(int8_t)m_ActiveWeapon,
+			m_LatestInput.m_Jump,
+			m_LatestInput.m_Fire&1,
+			m_LatestInput.m_Hook,
+		};
+		m_pPlayer->m_gpLogger.AddFrame(RenderData, &InputData);
+	}
+
 	if(m_pPlayer->m_ForceBalanced)
 	{
 		char Buf[128];

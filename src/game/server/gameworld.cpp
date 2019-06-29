@@ -4,6 +4,9 @@
 #include "gameworld.h"
 #include "entity.h"
 #include "gamecontext.h"
+#include "entities/pickup.h"
+#include "entities/laser.h"
+#include "entities/projectile.h"
 
 //////////////////////////////////////////////////
 // game world
@@ -244,4 +247,155 @@ CCharacter *CGameWorld::ClosestCharacter(vec2 Pos, float Radius, CEntity *pNotTh
 	}
 
 	return pClosest;
+}
+
+void CGameWorld::RenderTMLPFrame(uint8_t *RenderBuffer, vec2 Center)
+{
+	auto SetPixel = [RenderBuffer](int x, int y, int v)
+	{
+		if(x >= 0 && x < 90 && y >= 0 && y < 50)
+			RenderBuffer[y*90+x] = v;
+	};
+
+	auto DrawLine = [SetPixel](int x1, int y1, int x2, int y2, int v)
+	{
+		bool steep = abs(y2 - y1) > abs(x2 - x1);
+		if(steep)
+		{
+			std::swap(x1, y1);
+			std::swap(x2, y2);
+		}
+		if(x1 > x2)
+		{
+			std::swap(x1, x2);
+			std::swap(y1, y2);
+		}
+		int dx = x2 - x1;
+		int dy = abs(y2 - y1);
+		float error = dx / 2.0f;
+		int ystep = y1 < y2 ? 1 : -1;
+		int y = y1;
+		for(int x = x1; x < x2; x++)
+		{
+			if(steep)
+				SetPixel(y, x, v);
+			else
+				SetPixel(x, y, v);
+			error -= dy;
+			if(error < 0)
+			{
+				y += ystep;
+				error += dx;
+			}
+		}
+	};
+
+	int CenterX = ((int)Center.x+8)/16;
+	int CenterY = ((int)Center.y+8)/16;
+
+	// Pickups
+	{
+		CPickup *p = (CPickup *)FindFirst(ENTTYPE_PICKUP);
+		for(; p; p = (CPickup *)p->TypeNext())
+		{
+			if(p->m_SpawnTick != -1)
+				continue;
+
+			int v;
+			switch(p->m_Type)
+			{
+				case POWERUP_HEALTH: v = 4; break;
+				case POWERUP_ARMOR:  v = 5; break;
+				case POWERUP_WEAPON:
+					switch(p->m_Subtype)
+					{
+						case WEAPON_SHOTGUN: v = 6; break;
+						case WEAPON_GRENADE: v = 7; break;
+						case WEAPON_RIFLE:   v = 8; break;
+						default: continue;
+					}
+					break;
+				case POWERUP_NINJA:  v = 9; break;
+				default: continue;
+			}
+
+			int x = ((int)p->m_Pos.x-8)/16 - CenterX + 45;
+			int y = ((int)p->m_Pos.y-8)/16 - CenterY + 25;
+
+			SetPixel(x,   y, v);
+			SetPixel(x+1, y, v);
+			SetPixel(x,   y+1, v);
+			SetPixel(x+1, y+1, v);
+			if(p->m_Type == POWERUP_WEAPON || p->m_Type == POWERUP_NINJA)
+			{
+				SetPixel(x-1, y,   v);
+				SetPixel(x+2, y,   v);
+				SetPixel(x-1, y+1, v);
+				SetPixel(x+2, y+1, v);
+			}
+		}
+	}
+
+	// Player hook
+	{
+		CCharacter *p = (CCharacter *)FindFirst(ENTTYPE_CHARACTER);
+		for(; p; p = (CCharacter *)p->TypeNext())
+		{
+			if(p->m_Core.m_HookState == HOOK_RETRACTED || p->m_Core.m_HookState == HOOK_IDLE)
+				continue;
+
+			int x = ((int)p->m_Pos.x-8)/16 - CenterX + 45;
+			int y = ((int)p->m_Pos.y-8)/16 - CenterY + 25;
+			int hx = ((int)p->m_Core.m_HookPos.x)/16 - CenterX + 45;
+			int hy = ((int)p->m_Core.m_HookPos.y)/16 - CenterY + 25;
+			DrawLine(x, y, hx, hy, 20);
+		}
+	}
+
+	// Laser beam
+	{
+		CLaser *p = (CLaser *)FindFirst(ENTTYPE_LASER);
+		for(; p; p = (CLaser *)p->TypeNext())
+		{
+			int x = ((int)p->m_Pos.x)/16 - CenterX + 45;
+			int y = ((int)p->m_Pos.y)/16 - CenterY + 25;
+			int fx = ((int)p->m_From.x)/16 - CenterX + 45;
+			int fy = ((int)p->m_From.y)/16 - CenterY + 25;
+			DrawLine(fx, fy, x, y, 13);
+		}
+	}
+
+	// Projectile
+	{
+		CProjectile *p = (CProjectile *)FindFirst(ENTTYPE_PROJECTILE);
+		for(; p; p = (CProjectile *)p->TypeNext())
+		{
+			int v;
+			switch(p->m_Type)
+			{
+				case WEAPON_GUN:     v = 10; break;
+				case WEAPON_SHOTGUN: v = 11; break;
+				case WEAPON_GRENADE: v = 12; break;
+				default: continue;
+			}
+			int x = ((int)p->m_CurPos.x)/16 - CenterX + 45;
+			int y = ((int)p->m_CurPos.y)/16 - CenterY + 25;
+			SetPixel(x, y, v);
+		}
+	}
+
+	// Character
+	{
+		CCharacter *p = (CCharacter *)FindFirst(ENTTYPE_CHARACTER);
+		for(; p; p = (CCharacter *)p->TypeNext())
+		{
+			int v = p->m_ActiveWeapon + 14;
+			int x = ((int)p->m_Pos.x-8)/16 - CenterX + 45;
+			int y = ((int)p->m_Pos.y-8)/16 - CenterY + 25;
+			SetPixel(x,   y, v);
+			SetPixel(x+1, y, v);
+			SetPixel(x,   y+1, v);
+			SetPixel(x+1, y+1, v);
+		}
+	}
 }

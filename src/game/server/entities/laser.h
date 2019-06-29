@@ -15,12 +15,13 @@ public:
 	virtual void TickPaused();
 	virtual void Snap(int SnappingClient);
 
+	vec2 m_From;
+
 protected:
 	bool HitCharacter(vec2 From, vec2 To);
 	void DoBounce();
 
 private:
-	vec2 m_From;
 	vec2 m_Dir;
 	float m_Energy;
 	int m_Bounces;

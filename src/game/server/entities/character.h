@@ -64,6 +64,11 @@ public:
 	bool IsAlive() const { return m_Alive; }
 	class CPlayer *GetPlayer() { return m_pPlayer; }
 
+	int m_ActiveWeapon;
+
+	// the player core for the physics
+	CCharacterCore m_Core;
+
 private:
 	// player controlling this character
 	class CPlayer *m_pPlayer;
@@ -83,7 +88,6 @@ private:
 
 	} m_aWeapons[NUM_WEAPONS];
 
-	int m_ActiveWeapon;
 	int m_LastWeapon;
 	int m_QueuedWeapon;
 
@@ -122,9 +126,6 @@ private:
 		int m_CurrentMoveTime;
 		int m_OldVelAmount;
 	} m_Ninja;
-
-	// the player core for the physics
-	CCharacterCore m_Core;
 
 	// info for dead reckoning
 	int m_ReckoningTick; // tick that we are performing dead reckoning From
