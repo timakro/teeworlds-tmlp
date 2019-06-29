@@ -505,7 +505,7 @@ void CGameContext::OnTick()
 	}
 
 
-#ifdef CONF_DEBUG
+/*#ifdef CONF_DEBUG
 	if(g_Config.m_DbgDummies)
 	{
 		for(int i = 0; i < g_Config.m_DbgDummies ; i++)
@@ -515,7 +515,7 @@ void CGameContext::OnTick()
 			m_apPlayers[MAX_CLIENTS-i-1]->OnPredictedInput(&Input);
 		}
 	}
-#endif
+#endif*/
 }
 
 // Server hooks
@@ -545,24 +545,22 @@ void CGameContext::OnClientEnter(int ClientID)
 	m_VoteUpdate = true;
 }
 
-void CGameContext::OnClientConnected(int ClientID)
+void CGameContext::OnClientConnected(int ClientID, bool IsBot)
 {
 	// Check which team the player should be on
 	const int StartTeam = g_Config.m_SvTournamentMode ? TEAM_SPECTATORS : m_pController->GetAutoTeam(ClientID);
 
-	m_apPlayers[ClientID] = new(ClientID) CPlayer(this, ClientID, StartTeam);
+	m_apPlayers[ClientID] = new(ClientID) CPlayer(this, ClientID, StartTeam, IsBot);
 	//players[client_id].init(client_id);
 	//players[client_id].client_id = client_id;
 
 	(void)m_pController->CheckTeamBalance();
 
-#ifdef CONF_DEBUG
 	if(g_Config.m_DbgDummies)
 	{
 		if(ClientID >= MAX_CLIENTS-g_Config.m_DbgDummies)
 			return;
 	}
-#endif
 
 	// send active vote
 	if(m_VoteCloseTime)
@@ -1545,15 +1543,13 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 
 	//game.world.insert_entity(game.Controller);
 
-#ifdef CONF_DEBUG
 	if(g_Config.m_DbgDummies)
 	{
 		for(int i = 0; i < g_Config.m_DbgDummies ; i++)
 		{
-			OnClientConnected(MAX_CLIENTS-i-1);
+			OnClientConnected(MAX_CLIENTS-i-1, true);
 		}
 	}
-#endif
 }
 
 void CGameContext::OnShutdown()

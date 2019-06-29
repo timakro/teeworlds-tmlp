@@ -6,6 +6,8 @@
 // this include should perhaps be removed
 #include "entities/character.h"
 #include "gamecontext.h"
+#include "gplogger.h"
+#include "model.h"
 
 // player object
 class CPlayer
@@ -13,7 +15,7 @@ class CPlayer
 	MACRO_ALLOC_POOL_ID()
 
 public:
-	CPlayer(CGameContext *pGameServer, int ClientID, int Team);
+	CPlayer(CGameContext *pGameServer, int ClientID, int Team, bool IsBot=false);
 	~CPlayer();
 
 	void Init(int CID);
@@ -95,6 +97,10 @@ public:
 		int m_Min;
 		int m_Max;
 	} m_Latency;
+
+	bool m_IsBot;
+	CGameplayLogger *m_gpLogger;
+	CModel *m_Model;
 
 private:
 	CCharacter *m_pCharacter;

@@ -519,6 +519,9 @@ int CServer::SendMsg(CMsgPacker *pMsg, int Flags, int ClientID)
 
 int CServer::SendMsgEx(CMsgPacker *pMsg, int Flags, int ClientID, bool System)
 {
+	if(ClientID >= MaxClients())
+		return -1;
+
 	CNetChunk Packet;
 	if(!pMsg)
 		return -1;

@@ -132,6 +132,9 @@ private:
 	CCharacterCore m_SendCore; // core that we should send
 	CCharacterCore m_ReckoningCore; // the dead reckoning core
 
+	// TMLP
+	int m_FireValue = 0;
+
 };
 
 #endif

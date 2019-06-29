@@ -9,7 +9,7 @@ MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS)
 
 IServer *CPlayer::Server() const { return m_pGameServer->Server(); }
 
-CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
+CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team, bool IsBot)
 {
 	m_pGameServer = pGameServer;
 	m_RespawnTick = Server()->Tick();
@@ -21,21 +21,29 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	m_SpectatorID = SPEC_FREEVIEW;
 	m_LastActionTick = Server()->Tick();
 	m_TeamChangeTick = Server()->Tick();
+
+	m_IsBot = IsBot;
+	if (IsBot) {
+		m_gpLogger = new CGameplayLogger();
+		m_Model = new CModel();
+	}
 }
 
 CPlayer::~CPlayer()
 {
 	delete m_pCharacter;
 	m_pCharacter = 0;
+	delete m_gpLogger;
+	m_gpLogger = 0;
+	delete m_Model;
+	m_Model = 0;
 }
 
 void CPlayer::Tick()
 {
-#ifdef CONF_DEBUG
 	if(!g_Config.m_DbgDummies || m_ClientID < MAX_CLIENTS-g_Config.m_DbgDummies)
-#endif
-	if(!Server()->ClientIngame(m_ClientID))
-		return;
+		if(!Server()->ClientIngame(m_ClientID))
+			return;
 
 	Server()->SetClientScore(m_ClientID, m_Score);
 
@@ -112,11 +120,9 @@ void CPlayer::PostTick()
 
 void CPlayer::Snap(int SnappingClient)
 {
-#ifdef CONF_DEBUG
 	if(!g_Config.m_DbgDummies || m_ClientID < MAX_CLIENTS-g_Config.m_DbgDummies)
-#endif
-	if(!Server()->ClientIngame(m_ClientID))
-		return;
+		if(!Server()->ClientIngame(m_ClientID))
+			return;
 
 	CNetObj_ClientInfo *pClientInfo = static_cast<CNetObj_ClientInfo *>(Server()->SnapNewItem(NETOBJTYPE_CLIENTINFO, m_ClientID, sizeof(CNetObj_ClientInfo)));
 	if(!pClientInfo)

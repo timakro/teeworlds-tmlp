@@ -91,9 +91,8 @@ MACRO_CONFIG_STR(SvTMLPDir, sv_tmlp_dir, 256, "sessions", CFGFLAG_SERVER, "Direc
 MACRO_CONFIG_STR(SvTMLPTmpDir, sv_tmlp_tmpdir, 256, "tmpsessions", CFGFLAG_SERVER, "Directory for temporary sessions")
 
 // debug
-#ifdef CONF_DEBUG // this one can crash the server if not used correctly
-	MACRO_CONFIG_INT(DbgDummies, dbg_dummies, 0, 0, 15, CFGFLAG_SERVER, "")
-#endif
+// this one can crash the server if not used correctly
+MACRO_CONFIG_INT(DbgDummies, dbg_dummies, 0, 0, 15, CFGFLAG_SERVER, "")
 
 MACRO_CONFIG_INT(DbgFocus, dbg_focus, 0, 0, 1, CFGFLAG_CLIENT, "")
 MACRO_CONFIG_INT(DbgTuning, dbg_tuning, 0, 0, 1, CFGFLAG_CLIENT, "")
