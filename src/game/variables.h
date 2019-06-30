@@ -85,10 +85,10 @@ MACRO_CONFIG_INT(SvVoteKickMin, sv_vote_kick_min, 0, 0, MAX_CLIENTS, CFGFLAG_SER
 MACRO_CONFIG_INT(SvVoteKickBantime, sv_vote_kick_bantime, 5, 0, 1440, CFGFLAG_SERVER, "The time to ban a player if kicked by vote. 0 makes it just use kick")
 
 // TMLP
-MACRO_CONFIG_STR(SvTMLPDomain, sv_tmlp_domain, 16, "", CFGFLAG_SERVER, "Domain running the game server")
-MACRO_CONFIG_INT(SvTMLPServerID, sv_tmlp_serverid, 0, 0, 100000, CFGFLAG_SERVER, "Game server id")
-MACRO_CONFIG_STR(SvTMLPDir, sv_tmlp_dir, 256, "sessions", CFGFLAG_SERVER, "Directory for finished sessions")
-MACRO_CONFIG_STR(SvTMLPTmpDir, sv_tmlp_tmpdir, 256, "tmpsessions", CFGFLAG_SERVER, "Directory for temporary sessions")
+MACRO_CONFIG_STR(TMLP_Domain, tmlp_domain, 16, "", CFGFLAG_SERVER, "Domain running the game server")
+MACRO_CONFIG_INT(TMLP_ServerID, tmlp_serverid, 0, 0, 100000, CFGFLAG_SERVER, "Game server id")
+MACRO_CONFIG_STR(TMLP_Dir, tmlp_dir, 256, "sessions", CFGFLAG_SERVER, "Directory for finished sessions")
+MACRO_CONFIG_STR(TMLP_TmpDir, tmlp_tmpdir, 256, "tmpsessions", CFGFLAG_SERVER, "Directory for temporary sessions")
 
 // debug
 // this one can crash the server if not used correctly
