@@ -23,10 +23,8 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team, bool IsBot)
 	m_TeamChangeTick = Server()->Tick();
 
 	m_IsBot = IsBot;
-	if (IsBot) {
+	if (IsBot)
 		m_gpLogger = new CGameplayLogger();
-		m_Model = new CModel();
-	}
 }
 
 CPlayer::~CPlayer()
@@ -35,8 +33,6 @@ CPlayer::~CPlayer()
 	m_pCharacter = 0;
 	delete m_gpLogger;
 	m_gpLogger = 0;
-	delete m_Model;
-	m_Model = 0;
 }
 
 void CPlayer::Tick()
@@ -89,6 +85,9 @@ void CPlayer::Tick()
 			}
 		}
 		else if(m_Spawning && m_RespawnTick <= Server()->Tick())
+			TryRespawn();
+
+		if(!m_pCharacter && g_Config.m_TMLP_TrainingMode)
 			TryRespawn();
 	}
 	else

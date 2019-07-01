@@ -14,6 +14,7 @@
 #include "gamecontroller.h"
 #include "gameworld.h"
 #include "player.h"
+#include "model.h"
 
 /*
 	Tick
@@ -149,6 +150,10 @@ public:
 
 	//
 	void SwapTeams();
+
+	// TMLP
+	void HandleTMLP();
+	CModel m_Model;
 
 	// engine events
 	virtual void OnInit();

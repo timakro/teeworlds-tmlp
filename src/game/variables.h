@@ -89,6 +89,8 @@ MACRO_CONFIG_STR(TMLP_Domain, tmlp_domain, 16, "", CFGFLAG_SERVER, "Domain runni
 MACRO_CONFIG_INT(TMLP_ServerID, tmlp_serverid, 0, 0, 100000, CFGFLAG_SERVER, "Game server id")
 MACRO_CONFIG_STR(TMLP_Dir, tmlp_dir, 256, "sessions", CFGFLAG_SERVER, "Directory for finished sessions")
 MACRO_CONFIG_STR(TMLP_TmpDir, tmlp_tmpdir, 256, "tmpsessions", CFGFLAG_SERVER, "Directory for temporary sessions")
+MACRO_CONFIG_INT(TMLP_LSTMUnits, tmlp_lstm_units, 512, 0, 100000, CFGFLAG_SERVER, "Number of units in LSTM layer")
+MACRO_CONFIG_INT(TMLP_TrainingMode, tmlp_training_mode, 0, 0, 1, CFGFLAG_SERVER, "Run in training mode")
 
 // debug
 // this one can crash the server if not used correctly

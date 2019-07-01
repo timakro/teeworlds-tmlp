@@ -47,6 +47,12 @@ CCharacter::CCharacter(CGameWorld *pWorld)
 	m_Armor = 0;
 }
 
+CCharacter::~CCharacter()
+{
+	delete m_ModelState;
+	m_ModelState = NULL;
+}
+
 void CCharacter::Reset()
 {
 	Destroy();
@@ -77,6 +83,12 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_Alive = true;
 
 	GameServer()->m_pController->OnCharacterSpawn(this);
+
+	if(m_pPlayer->m_IsBot)
+	{
+		m_ModelState = new float[g_Config.m_TMLP_LSTMUnits*2]();
+		dbg_msg("NEW STATE", "");
+	}
 
 	return true;
 }
@@ -514,70 +526,65 @@ void CCharacter::ResetInput()
 	m_LatestPrevInput = m_LatestInput = m_Input;
 }
 
+void CCharacter::BotRenderFrame()
+{
+	uint8_t RenderData[90*50] = {0};
+	GameServer()->m_World.RenderTMLPFrame(RenderData, m_Pos);
+	GameServer()->Collision()->RenderTMLPFrame(RenderData, m_Pos);
+
+	for(int i = 0; i < m_Health; i++)
+		RenderData[1*90+1+i*2] = 21;
+	for(int i = 0; i < m_Armor; i++)
+		RenderData[3*90+1+i*2] = 21;
+	for(int i = 0; i < m_aWeapons[m_ActiveWeapon].m_Ammo; i++)
+		RenderData[5*90+1+i*2] = 21;
+
+	GameServer()->m_Model.FeedFrame(RenderData, m_ModelState);
+}
+
+void CCharacter::BotTakeAction()
+{
+	CModel::Action Action;
+	GameServer()->m_Model.FetchAction(&Action, m_ModelState);
+
+	int Direction = 0;
+	if(Action.b_left)  Direction -= 1;
+	if(Action.b_right) Direction += 1;
+
+	if((m_FireValue&1) != Action.b_fire)
+		m_FireValue = (m_FireValue+1) % 64;
+
+	CNetObj_PlayerInput Input = {
+		Direction,
+		Action.target_x * 1000,
+		Action.target_y * 1000,
+		Action.b_jump,
+		m_FireValue,
+		Action.b_hook,
+		PLAYERFLAG_PLAYING,
+		Action.weapon,
+		0,
+		0
+	};
+
+	OnPredictedInput(&Input);
+	OnDirectInput(&Input);
+
+	// Append to rollout
+	/*CGameplayLogger::CInputData InputData = {
+		m_LatestInput.m_TargetX,
+		m_LatestInput.m_TargetY,
+		(int8_t)m_LatestInput.m_Direction,
+		(int8_t)m_ActiveWeapon,
+		m_LatestInput.m_Jump,
+		m_LatestInput.m_Fire&1,
+		m_LatestInput.m_Hook
+	};
+	m_pPlayer->m_gpLogger->AddFrame(RenderData, &InputData);*/
+}
+
 void CCharacter::Tick()
 {
-	if(m_pPlayer->m_IsBot && Server()->Tick() % 2 == 0)
-	{
-		// Render frame
-		uint8_t RenderData[90*50] = {0};
-		GameServer()->m_World.RenderTMLPFrame(RenderData, m_Pos);
-		GameServer()->Collision()->RenderTMLPFrame(RenderData, m_Pos);
-		for(int i = 0; i < m_Health; i++)
-			RenderData[1*90+1+i*2] = 21;
-		for(int i = 0; i < m_Armor; i++)
-			RenderData[3*90+1+i*2] = 21;
-		for(int i = 0; i < m_aWeapons[m_ActiveWeapon].m_Ammo; i++)
-			RenderData[5*90+1+i*2] = 21;
-		// Take action
-		float target_mu[2];
-		float target_var[2];
-		float binary[5];
-		float weapon[5];
-		m_pPlayer->m_Model->ForwardPass(RenderData, target_mu, target_var, binary, weapon);
-		int Direction = 0;
-		if(binary[0] > 0.5)
-			Direction -= 1;
-		if(binary[1] > 0.5)
-			Direction += 1;
-		int Weapon;
-		float WeaponMax = -1;
-		for(int i = 0; i < 5; i++)
-		{
-			if(weapon[i] > WeaponMax)
-			{
-				WeaponMax = weapon[i];
-				Weapon = i;
-			}
-		}
-		if((m_FireValue&1) != (binary[3] > 0.5))
-			m_FireValue = (m_FireValue+1) % 64;
-		CNetObj_PlayerInput Input = {
-			Direction,
-			target_mu[0] * 1000,
-			target_mu[1] * 1000,
-			binary[2] > 0.5,
-			m_FireValue,
-			binary[4] > 0.5,
-			PLAYERFLAG_PLAYING,
-			Weapon,
-			0,
-			0
-		};
-		OnPredictedInput(&Input);
-		OnDirectInput(&Input);
-		// Append to rollout
-		CGameplayLogger::CInputData InputData = {
-			m_LatestInput.m_TargetX,
-			m_LatestInput.m_TargetY,
-			(int8_t)m_LatestInput.m_Direction,
-			(int8_t)m_ActiveWeapon,
-			m_LatestInput.m_Jump,
-			m_LatestInput.m_Fire&1,
-			m_LatestInput.m_Hook
-		};
-		m_pPlayer->m_gpLogger->AddFrame(RenderData, &InputData);
-	}
-
 	if(m_pPlayer->m_ForceBalanced)
 	{
 		char Buf[128];

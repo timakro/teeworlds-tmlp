@@ -25,6 +25,7 @@ public:
 	static const int ms_PhysSize = 28;
 
 	CCharacter(CGameWorld *pWorld);
+	~CCharacter();
 
 	virtual void Reset();
 	virtual void Destroy();
@@ -68,6 +69,12 @@ public:
 
 	// the player core for the physics
 	CCharacterCore m_Core;
+
+	// TMLP
+	void BotRenderFrame();
+	void BotTakeAction();
+	int m_FireValue = 0;
+	float *m_ModelState;
 
 private:
 	// player controlling this character
@@ -131,9 +138,6 @@ private:
 	int m_ReckoningTick; // tick that we are performing dead reckoning From
 	CCharacterCore m_SendCore; // core that we should send
 	CCharacterCore m_ReckoningCore; // the dead reckoning core
-
-	// TMLP
-	int m_FireValue = 0;
 
 };
 

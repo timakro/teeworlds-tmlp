@@ -404,8 +404,31 @@ void CGameContext::SwapTeams()
 	(void)m_pController->CheckTeamBalance();
 }
 
+void CGameContext::HandleTMLP()
+{
+	int NumBots = 0;
+	for(int i = 0; i < MAX_CLIENTS; i++)
+		if(m_apPlayers[i] && m_apPlayers[i]->m_IsBot && m_apPlayers[i]->GetCharacter())
+			NumBots++;
+
+	m_Model.PrepareFrame(NumBots);
+
+	for(int i = 0; i < MAX_CLIENTS; i++)
+		if(m_apPlayers[i] && m_apPlayers[i]->m_IsBot && m_apPlayers[i]->GetCharacter())
+			m_apPlayers[i]->GetCharacter()->BotRenderFrame();
+
+	m_Model.ForwardPass();
+
+	for(int i = 0; i < MAX_CLIENTS; i++)
+		if(m_apPlayers[i] && m_apPlayers[i]->m_IsBot && m_apPlayers[i]->GetCharacter())
+			m_apPlayers[i]->GetCharacter()->BotTakeAction();
+}
+
 void CGameContext::OnTick()
 {
+	if(Server()->Tick() % 2 == 0)
+		HandleTMLP();
+
 	// check tuning
 	CheckPureTuning();
 

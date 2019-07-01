@@ -57,10 +57,10 @@ void CGameplayLogger::NewSession(int ClientID, const char *PlayerName, const cha
 	// start time, domain, serverid, cid, random
 	char Random[9];
 	RandomStr(Random, 8);
-	str_format(m_SessionID, sizeof(m_SessionID), "%x-%s-%d-%d-%s", m_StartTime, g_Config.m_SvTMLPDomain, g_Config.m_SvTMLPServerID, m_ClientID, Random);
+	str_format(m_SessionID, sizeof(m_SessionID), "%x-%s-%d-%d-%s", m_StartTime, g_Config.m_TMLP_Domain, g_Config.m_TMLP_ServerID, m_ClientID, Random);
 	dbg_msg("gplogger", "New session %s", m_SessionID);
 
-	str_format(m_SessionTmpDir, sizeof(m_SessionTmpDir), "%s/%s", g_Config.m_SvTMLPTmpDir, m_SessionID);
+	str_format(m_SessionTmpDir, sizeof(m_SessionTmpDir), "%s/%s", g_Config.m_TMLP_TmpDir, m_SessionID);
 	if (mkdir(m_SessionTmpDir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH))
 		return;
 
@@ -125,8 +125,8 @@ void CGameplayLogger::SaveSession(int Score, const char* RoundID)
 	MetaFile << "\n, \"cid\": " << m_ClientID;
 	MetaFile << "\n, \"player\": \"" << escape_json(m_PlayerName) << "\"";
 	MetaFile << "\n, \"ip\": \"" << escape_json(m_PlayerAddr) << "\"";
-	MetaFile << "\n, \"domain\": \"" << escape_json(g_Config.m_SvTMLPDomain) << "\"";
-	MetaFile << "\n, \"serverid\": " << g_Config.m_SvTMLPServerID;
+	MetaFile << "\n, \"domain\": \"" << escape_json(g_Config.m_TMLP_Domain) << "\"";
+	MetaFile << "\n, \"serverid\": " << g_Config.m_TMLP_ServerID;
 	MetaFile << "\n, \"map\": \"" << escape_json(g_Config.m_SvMap) << "\"";
 	MetaFile << "\n, \"gametype\": \"" << escape_json(g_Config.m_SvGametype) << "\"";
 	MetaFile << "\n, \"sessionid\": \"" << escape_json(m_SessionID) << "\"";
@@ -135,7 +135,7 @@ void CGameplayLogger::SaveSession(int Score, const char* RoundID)
 	MetaFile.close();
 
 	char SessionDir[320];
-	str_format(SessionDir, sizeof(SessionDir), "%s/%s", g_Config.m_SvTMLPDir, m_SessionID);
+	str_format(SessionDir, sizeof(SessionDir), "%s/%s", g_Config.m_TMLP_Dir, m_SessionID);
 	rename(m_SessionTmpDir, SessionDir);
 
 	m_Active = false;
@@ -159,7 +159,7 @@ void CGameplayLogger::GenRoundID(char *buffer, int len)
 {
 	char Random[9];
 	RandomStr(Random, 8);
-	str_format(buffer, len, "%x-%s-%d-%s", time(NULL), g_Config.m_SvTMLPDomain, g_Config.m_SvTMLPServerID, Random);
+	str_format(buffer, len, "%x-%s-%d-%s", time(NULL), g_Config.m_TMLP_Domain, g_Config.m_TMLP_ServerID, Random);
 }
 
 void CGameplayLogger::RandomStr(char *str, int len)

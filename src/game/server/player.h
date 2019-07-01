@@ -7,7 +7,6 @@
 #include "entities/character.h"
 #include "gamecontext.h"
 #include "gplogger.h"
-#include "model.h"
 
 // player object
 class CPlayer
@@ -98,9 +97,9 @@ public:
 		int m_Max;
 	} m_Latency;
 
+	// TMLP
 	bool m_IsBot;
-	CGameplayLogger *m_gpLogger;
-	CModel *m_Model;
+	CGameplayLogger *m_gpLogger = NULL;
 
 private:
 	CCharacter *m_pCharacter;
