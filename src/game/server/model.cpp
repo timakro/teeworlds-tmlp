@@ -101,10 +101,9 @@ void CModel::FeedFrame(uint8_t *Frame, float *State)
 
 void CModel::ForwardPass()
 {
+	//std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+
 	m_BotIndex = 0;
-
-	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-
 	tf::Status run_status;
 	run_status = m_Bundle->session->Run({{"input", *m_Input}, {"state_in", *m_StateIn}},
 		{"target_mu/Tanh", "target_var/Softplus", "binary/Sigmoid", "weapon/truediv", "state_out"}, {}, &m_Outputs);
@@ -112,9 +111,9 @@ void CModel::ForwardPass()
 	if(!run_status.ok())
 		std::cout << "Running model failed: " << run_status << std::endl;
 
-	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+	/*std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double, std::milli> time_span = t2 - t1;
-	std::cout << "It took me " << time_span.count() << " milliseconds." << std::endl;
+	std::cout << "It took me " << time_span.count() << " milliseconds." << std::endl;*/
 }
 
 void CModel::FetchAction(Action *Act, float *State)

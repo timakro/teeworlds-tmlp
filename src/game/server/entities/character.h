@@ -25,7 +25,6 @@ public:
 	static const int ms_PhysSize = 28;
 
 	CCharacter(CGameWorld *pWorld);
-	~CCharacter();
 
 	virtual void Reset();
 	virtual void Destroy();
@@ -74,7 +73,6 @@ public:
 	void BotRenderFrame();
 	void BotTakeAction();
 	int m_FireValue = 0;
-	float *m_ModelState;
 
 private:
 	// player controlling this character

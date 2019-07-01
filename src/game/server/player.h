@@ -100,6 +100,7 @@ public:
 	// TMLP
 	bool m_IsBot;
 	CGameplayLogger *m_gpLogger = NULL;
+	float *m_ModelState = NULL;
 
 private:
 	CCharacter *m_pCharacter;

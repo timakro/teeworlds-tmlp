@@ -47,12 +47,6 @@ CCharacter::CCharacter(CGameWorld *pWorld)
 	m_Armor = 0;
 }
 
-CCharacter::~CCharacter()
-{
-	delete m_ModelState;
-	m_ModelState = NULL;
-}
-
 void CCharacter::Reset()
 {
 	Destroy();
@@ -83,12 +77,6 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_Alive = true;
 
 	GameServer()->m_pController->OnCharacterSpawn(this);
-
-	if(m_pPlayer->m_IsBot)
-	{
-		m_ModelState = new float[g_Config.m_TMLP_LSTMUnits*2]();
-		dbg_msg("NEW STATE", "");
-	}
 
 	return true;
 }
@@ -539,13 +527,13 @@ void CCharacter::BotRenderFrame()
 	for(int i = 0; i < m_aWeapons[m_ActiveWeapon].m_Ammo; i++)
 		RenderData[5*90+1+i*2] = 21;
 
-	GameServer()->m_Model.FeedFrame(RenderData, m_ModelState);
+	GameServer()->m_Model.FeedFrame(RenderData, m_pPlayer->m_ModelState);
 }
 
 void CCharacter::BotTakeAction()
 {
 	CModel::Action Action;
-	GameServer()->m_Model.FetchAction(&Action, m_ModelState);
+	GameServer()->m_Model.FetchAction(&Action, m_pPlayer->m_ModelState);
 
 	int Direction = 0;
 	if(Action.b_left)  Direction -= 1;
