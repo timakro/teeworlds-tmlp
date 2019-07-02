@@ -12,7 +12,6 @@ CModel::CModel()
 : m_RandGen(std::random_device()())
 {
 	m_Bundle = new tf::SavedModelBundle();
-	tf::LoadSavedModel(tf::SessionOptions(), tf::RunOptions(), "../testsave", {tf::kSavedModelTagServe}, m_Bundle);
 }
 
 CModel::~CModel()
@@ -23,6 +22,13 @@ CModel::~CModel()
 	m_Input = NULL;
 	delete m_StateIn;
 	m_StateIn = NULL;
+}
+
+void CModel::LoadModel()
+{
+	tf::Status run_status = tf::LoadSavedModel(tf::SessionOptions(), tf::RunOptions(), g_Config.m_TMLP_ModelPath, {tf::kSavedModelTagServe}, m_Bundle);
+	if(!run_status.ok())
+		std::cout << "Loading model failed: " << run_status << std::endl;
 }
 
 bool CModel::SampleBinary(float Value)
@@ -68,7 +74,7 @@ float CModel::SampleNormal(float Mu, float Var)
 	if(g_Config.m_TMLP_TrainingMode)
 	{
 		std::normal_distribution<float> NormalDist(Mu, sqrt(Var));
-		return NormalDist(m_RandGen);
+		return clamp(NormalDist(m_RandGen), 0.0f, 1.0f);
 	}
 	else
 	{
@@ -104,8 +110,7 @@ void CModel::ForwardPass()
 	//std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
 	m_BotIndex = 0;
-	tf::Status run_status;
-	run_status = m_Bundle->session->Run({{"input", *m_Input}, {"state_in", *m_StateIn}},
+	tf::Status run_status = m_Bundle->session->Run({{"input", *m_Input}, {"state_in", *m_StateIn}},
 		{"target_mu/Tanh", "target_var/Softplus", "binary/Sigmoid", "weapon/truediv", "state_out"}, {}, &m_Outputs);
 
 	if(!run_status.ok())
@@ -135,8 +140,4 @@ void CModel::FetchAction(Action *Act, float *State)
 	mem_copy(State, m_Outputs[4].flat<float>().data() + m_BotIndex*g_Config.m_TMLP_LSTMUnits*2, g_Config.m_TMLP_LSTMUnits*2*sizeof(float));
 
 	m_BotIndex++;
-}
-
-void CModel::ReloadModel()
-{
 }

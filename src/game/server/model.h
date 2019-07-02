@@ -27,12 +27,12 @@ public:
 		uint8_t weapon;
 	};
 
+	void LoadModel();
+
 	void PrepareFrame(int NumBots);
 	void FeedFrame(uint8_t *Frame, float *State);
 	void ForwardPass();
 	void FetchAction(Action *Act, float *State);
-
-	void ReloadModel();
 
 private:
 	bool SampleBinary(float Value);

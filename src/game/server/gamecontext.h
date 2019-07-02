@@ -152,8 +152,11 @@ public:
 	void SwapTeams();
 
 	// TMLP
+	static void HandleResumeSignal(int signum);
 	void HandleTMLP();
+	static bool m_WaitingForSignal;
 	CModel m_Model;
+	int m_EpisodeStep = 0;
 
 	// engine events
 	virtual void OnInit();

@@ -1,6 +1,8 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <new>
+#include <csignal>
+#include <iostream>
 #include <base/math.h>
 #include <engine/shared/config.h>
 #include <engine/map.h>
@@ -20,6 +22,8 @@ enum
 	NO_RESET
 };
 
+bool CGameContext::m_WaitingForSignal = true;
+
 void CGameContext::Construct(int Resetting)
 {
 	m_Resetting = 0;
@@ -37,6 +41,8 @@ void CGameContext::Construct(int Resetting)
 
 	if(Resetting==NO_RESET)
 		m_pVoteOptionHeap = new CHeap();
+
+	signal(SIGUSR1, HandleResumeSignal);
 }
 
 CGameContext::CGameContext(int Resetting)
@@ -404,8 +410,22 @@ void CGameContext::SwapTeams()
 	(void)m_pController->CheckTeamBalance();
 }
 
+void CGameContext::HandleResumeSignal(int signum)
+{
+	m_WaitingForSignal = false;
+}
+
 void CGameContext::HandleTMLP()
 {
+	if(m_EpisodeStep == 0)
+	{
+		if(g_Config.m_TMLP_EpisodeSteps)
+			while(m_WaitingForSignal)
+				pause();
+
+		m_Model.LoadModel();
+	}
+
 	int NumBots = 0;
 	for(int i = 0; i < MAX_CLIENTS; i++)
 		if(m_apPlayers[i] && m_apPlayers[i]->m_IsBot && m_apPlayers[i]->GetCharacter())
@@ -422,6 +442,16 @@ void CGameContext::HandleTMLP()
 	for(int i = 0; i < MAX_CLIENTS; i++)
 		if(m_apPlayers[i] && m_apPlayers[i]->m_IsBot && m_apPlayers[i]->GetCharacter())
 			m_apPlayers[i]->GetCharacter()->BotTakeAction();
+
+	m_EpisodeStep += 1;
+	if(g_Config.m_TMLP_EpisodeSteps && m_EpisodeStep == g_Config.m_TMLP_EpisodeSteps)
+	{
+		// write
+		m_EpisodeStep = 0;
+		m_WaitingForSignal = true;
+
+		std::cout << "Rollout saved to disk." << std::endl;
+	}
 }
 
 void CGameContext::OnTick()
