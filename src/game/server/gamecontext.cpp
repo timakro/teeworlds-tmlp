@@ -417,6 +417,14 @@ void CGameContext::HandleResumeSignal(int signum)
 
 void CGameContext::HandleTMLP()
 {
+	if(g_Config.m_TMLP_EpisodeSteps && m_EpisodeStep == g_Config.m_TMLP_EpisodeSteps)
+	{
+		// write
+		m_EpisodeStep = 0;
+		m_WaitingForSignal = true;
+
+		std::cout << "Rollout saved to disk." << std::endl;
+	}
 	if(m_EpisodeStep == 0)
 	{
 		if(g_Config.m_TMLP_EpisodeSteps)
@@ -425,6 +433,7 @@ void CGameContext::HandleTMLP()
 
 		m_Model.LoadModel();
 	}
+	m_EpisodeStep += 1;
 
 	int NumBots = 0;
 	for(int i = 0; i < MAX_CLIENTS; i++)
@@ -442,16 +451,6 @@ void CGameContext::HandleTMLP()
 	for(int i = 0; i < MAX_CLIENTS; i++)
 		if(m_apPlayers[i] && m_apPlayers[i]->m_IsBot && m_apPlayers[i]->GetCharacter())
 			m_apPlayers[i]->GetCharacter()->BotTakeAction();
-
-	m_EpisodeStep += 1;
-	if(g_Config.m_TMLP_EpisodeSteps && m_EpisodeStep == g_Config.m_TMLP_EpisodeSteps)
-	{
-		// write
-		m_EpisodeStep = 0;
-		m_WaitingForSignal = true;
-
-		std::cout << "Rollout saved to disk." << std::endl;
-	}
 }
 
 void CGameContext::OnTick()
