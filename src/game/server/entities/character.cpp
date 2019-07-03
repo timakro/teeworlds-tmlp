@@ -527,13 +527,15 @@ void CCharacter::BotRenderFrame()
 	for(int i = 0; i < m_aWeapons[m_ActiveWeapon].m_Ammo; i++)
 		RenderData[5*90+1+i*2] = 21;
 
-	GameServer()->m_Model.FeedFrame(RenderData, m_pPlayer->m_ModelState);
+	GameServer()->m_Model.FeedFrame(RenderData, m_pPlayer->m_RNNState);
+	m_pPlayer->m_rSaver->WriteState(RenderData);
 }
 
 void CCharacter::BotTakeAction()
 {
 	CModel::Action Action;
-	GameServer()->m_Model.FetchAction(&Action, m_pPlayer->m_ModelState);
+	float Value;
+	GameServer()->m_Model.FetchActionAndValue(&Action, m_pPlayer->m_RNNState, &Value);
 
 	int Direction = 0;
 	if(Action.b_left)  Direction -= 1;
@@ -558,17 +560,7 @@ void CCharacter::BotTakeAction()
 	OnPredictedInput(&Input);
 	OnDirectInput(&Input);
 
-	// Append to rollout
-	/*CGameplayLogger::CInputData InputData = {
-		m_LatestInput.m_TargetX,
-		m_LatestInput.m_TargetY,
-		(int8_t)m_LatestInput.m_Direction,
-		(int8_t)m_ActiveWeapon,
-		m_LatestInput.m_Jump,
-		m_LatestInput.m_Fire&1,
-		m_LatestInput.m_Hook
-	};
-	m_pPlayer->m_gpLogger->AddFrame(RenderData, &InputData);*/
+	m_pPlayer->m_rSaver->WriteActionAndValue(&Action, Value);
 }
 
 void CCharacter::Tick()
@@ -773,6 +765,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 		GameServer()->CreateDamageInd(m_Pos, 0, Dmg);
 	}
 
+	int SaveDmg = Dmg;
 	if(Dmg)
 	{
 		if(m_Armor)
@@ -796,6 +789,20 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 		}
 
 		m_Health -= Dmg;
+	}
+
+	// TMLP: Reward agent
+	if(GameServer()->m_apPlayers[From])
+	{
+		CPlayer *Killer = GameServer()->m_apPlayers[From];
+		if(From != m_pPlayer->GetCID())
+		{
+			Killer->m_Reward += 0.2f * SaveDmg;
+			if(m_Health <= 0)
+				Killer->m_Reward += 10.0f;
+		}
+		else if(m_Health <= 0)
+			Killer->m_Reward -= 10.0f;
 	}
 
 	m_DamageTakenTick = Server()->Tick();

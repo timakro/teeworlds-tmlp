@@ -30,9 +30,9 @@ public:
 	void LoadModel();
 
 	void PrepareFrame(int NumBots);
-	void FeedFrame(uint8_t *Frame, float *State);
+	void FeedFrame(uint8_t *Frame, float *RNNStateIn);
 	void ForwardPass();
-	void FetchAction(Action *Act, float *State);
+	void FetchActionAndValue(Action *Act, float *RNNStateOut, float *Value);
 
 private:
 	bool SampleBinary(float Value);
@@ -43,7 +43,7 @@ private:
 	std::uniform_real_distribution<float> m_RandF;
 	tensorflow::SavedModelBundle *m_Bundle;
 	tensorflow::Tensor *m_Input = NULL;
-	tensorflow::Tensor *m_StateIn = NULL;
+	tensorflow::Tensor *m_RNNStateIn = NULL;
 	std::vector<tensorflow::Tensor> m_Outputs;
 	int m_CurrentNumBots = -1;
 	int m_BotIndex;

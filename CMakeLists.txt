@@ -770,8 +770,8 @@ set_glob(GAME_SERVER GLOB_RECURSE src/game/server
   gameworld.h
   player.cpp
   player.h
-  gplogger.cpp
-  gplogger.h
+  rolloutsaver.cpp
+  rolloutsaver.h
   model.cpp
   model.h
 )

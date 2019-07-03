@@ -25,8 +25,8 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team, bool IsBot)
 	m_IsBot = IsBot;
 	if (IsBot)
 	{
-		m_gpLogger = new CGameplayLogger();
-		m_ModelState = new float[g_Config.m_TMLP_LSTMUnits*2]();
+		m_rSaver = new CRolloutSaver();
+		m_RNNState = new float[g_Config.m_TMLP_LSTMUnits*2]();
 	}
 }
 
@@ -34,10 +34,10 @@ CPlayer::~CPlayer()
 {
 	delete m_pCharacter;
 	m_pCharacter = 0;
-	delete m_gpLogger;
-	m_gpLogger = 0;
-	delete m_ModelState;
-	m_ModelState = 0;
+	delete m_rSaver;
+	m_rSaver = 0;
+	delete m_RNNState;
+	m_RNNState = 0;
 }
 
 void CPlayer::Tick()

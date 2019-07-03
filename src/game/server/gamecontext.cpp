@@ -3,6 +3,7 @@
 #include <new>
 #include <csignal>
 #include <iostream>
+#include <unistd.h>
 #include <base/math.h>
 #include <engine/shared/config.h>
 #include <engine/map.h>
@@ -417,23 +418,46 @@ void CGameContext::HandleResumeSignal(int signum)
 
 void CGameContext::HandleTMLP()
 {
-	if(g_Config.m_TMLP_EpisodeSteps && m_EpisodeStep == g_Config.m_TMLP_EpisodeSteps)
+	// Write reward to rollout
+	if(m_SequenceStep != -1)
 	{
-		// write
-		m_EpisodeStep = 0;
+		for(int i = 0; i < MAX_CLIENTS; i++)
+		{
+			if(m_apPlayers[i] && m_apPlayers[i]->m_IsBot && m_apPlayers[i]->GetCharacter())
+			{
+				m_apPlayers[i]->m_rSaver->WriteReward(m_apPlayers[i]->m_Reward);
+				m_apPlayers[i]->m_Reward = 0;
+			}
+		}
+	}
+
+	// Next sequence
+	m_SequenceStep += 1;
+	if(g_Config.m_TMLP_SequenceLength && m_SequenceStep == g_Config.m_TMLP_SequenceLength)
+	{
+		for(int i = 0; i < MAX_CLIENTS; i++)
+			if(m_apPlayers[i] && m_apPlayers[i]->m_IsBot)
+				m_apPlayers[i]->m_rSaver->CloseRollout();
+
 		m_WaitingForSignal = true;
+		m_SequenceStep = 0;
 
 		std::cout << "Rollout saved to disk." << std::endl;
 	}
-	if(m_EpisodeStep == 0)
+	if(m_SequenceStep == 0)
 	{
-		if(g_Config.m_TMLP_EpisodeSteps)
+		if(g_Config.m_TMLP_SequenceLength)
+		{
 			while(m_WaitingForSignal)
 				pause();
 
+			for(int i = 0; i < MAX_CLIENTS; i++)
+				if(m_apPlayers[i] && m_apPlayers[i]->m_IsBot)
+					m_apPlayers[i]->m_rSaver->NewRollout(MAX_CLIENTS-i-1);
+		}
+
 		m_Model.LoadModel();
 	}
-	m_EpisodeStep += 1;
 
 	int NumBots = 0;
 	for(int i = 0; i < MAX_CLIENTS; i++)
@@ -442,12 +466,14 @@ void CGameContext::HandleTMLP()
 
 	m_Model.PrepareFrame(NumBots);
 
+	// Render frame and write to rollout
 	for(int i = 0; i < MAX_CLIENTS; i++)
 		if(m_apPlayers[i] && m_apPlayers[i]->m_IsBot && m_apPlayers[i]->GetCharacter())
 			m_apPlayers[i]->GetCharacter()->BotRenderFrame();
 
 	m_Model.ForwardPass();
 
+	// Take action and write to rollout
 	for(int i = 0; i < MAX_CLIENTS; i++)
 		if(m_apPlayers[i] && m_apPlayers[i]->m_IsBot && m_apPlayers[i]->GetCharacter())
 			m_apPlayers[i]->GetCharacter()->BotTakeAction();

@@ -6,7 +6,7 @@
 // this include should perhaps be removed
 #include "entities/character.h"
 #include "gamecontext.h"
-#include "gplogger.h"
+#include "rolloutsaver.h"
 
 // player object
 class CPlayer
@@ -99,8 +99,9 @@ public:
 
 	// TMLP
 	bool m_IsBot;
-	CGameplayLogger *m_gpLogger = NULL;
-	float *m_ModelState = NULL;
+	CRolloutSaver *m_rSaver = NULL;
+	float *m_RNNState = NULL;
+	float m_Reward = 0.0f;
 
 private:
 	CCharacter *m_pCharacter;

@@ -156,7 +156,7 @@ public:
 	void HandleTMLP();
 	static bool m_WaitingForSignal;
 	CModel m_Model;
-	int m_EpisodeStep = 0;
+	int m_SequenceStep = -1;
 
 	// engine events
 	virtual void OnInit();
