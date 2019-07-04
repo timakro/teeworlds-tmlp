@@ -473,10 +473,21 @@ void CGameContext::HandleTMLP()
 
 	m_Model.ForwardPass();
 
-	// Take action and write to rollout
+	// Sample action and write to rollout
+	CNetObj_PlayerInput Inputs[MAX_CLIENTS];
 	for(int i = 0; i < MAX_CLIENTS; i++)
 		if(m_apPlayers[i] && m_apPlayers[i]->m_IsBot && m_apPlayers[i]->GetCharacter())
-			m_apPlayers[i]->GetCharacter()->BotTakeAction();
+			m_apPlayers[i]->GetCharacter()->BotSampleAction(&Inputs[i]);
+
+	// Apply input
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if(m_apPlayers[i] && m_apPlayers[i]->m_IsBot && m_apPlayers[i]->GetCharacter())
+		{
+			m_apPlayers[i]->GetCharacter()->OnPredictedInput(&Inputs[i]);
+			m_apPlayers[i]->GetCharacter()->OnDirectInput(&Inputs[i]);
+		}
+	}
 }
 
 void CGameContext::OnTick()

@@ -71,7 +71,7 @@ public:
 
 	// TMLP
 	void BotRenderFrame();
-	void BotTakeAction();
+	void BotSampleAction(CNetObj_PlayerInput *Input);
 	int m_FireValue = 0;
 
 private:

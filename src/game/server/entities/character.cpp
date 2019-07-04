@@ -531,7 +531,7 @@ void CCharacter::BotRenderFrame()
 	m_pPlayer->m_rSaver->WriteState(RenderData);
 }
 
-void CCharacter::BotTakeAction()
+void CCharacter::BotSampleAction(CNetObj_PlayerInput *Input)
 {
 	CModel::Action Action;
 	float Value;
@@ -544,7 +544,7 @@ void CCharacter::BotTakeAction()
 	if((m_FireValue&1) != Action.b_fire)
 		m_FireValue = (m_FireValue+1) % 64;
 
-	CNetObj_PlayerInput Input = {
+	*Input = {
 		Direction,
 		Action.target_x * 1000,
 		Action.target_y * 1000,
@@ -556,9 +556,6 @@ void CCharacter::BotTakeAction()
 		0,
 		0
 	};
-
-	OnPredictedInput(&Input);
-	OnDirectInput(&Input);
 
 	m_pPlayer->m_rSaver->WriteActionAndValue(&Action, Value);
 }
